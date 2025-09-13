@@ -34,13 +34,18 @@ export default function Home() {
       try {
         // Check if we're signed in
         const currentUser = await getUser();
-        const userFragments = await getUserFragments(
-          currentUser as FormattedUser
-        );
-        setUser(currentUser);
-        setFragments(userFragments);
+        if (currentUser) {
+          const userFragments = await getUserFragments(currentUser);
+          setUser(currentUser);
+          setFragments(userFragments);
+        } else {
+          setUser(null);
+          setFragments([]);
+        }
       } catch (error) {
         console.error("Error checking user:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
