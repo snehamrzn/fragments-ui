@@ -2,20 +2,8 @@
 
 import { UserManager, UserManagerSettings, User } from "oidc-client-ts";
 
-// Extend the NodeJS ProcessEnv interface to include our environment variables
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NEXT_PUBLIC_AWS_COGNITO_POOL_ID: string;
-      NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID: string;
-      NEXT_PUBLIC_OAUTH_SIGN_IN_REDIRECT_URL: string;
-
-    }
-  }
-}
-
 // Define a TypeScript interface for the formatted user object
-interface FormattedUser {
+export interface FormattedUser {
   username: string;
   email: string;
   idToken: string;
@@ -39,7 +27,7 @@ const cognitoAuthConfig: UserManagerSettings = {
 
 
 // Create a UserManager instance
-const userManager = new UserManager(cognitoAuthConfig);
+const userManager = new UserManager({...cognitoAuthConfig});
 // const userManager = new UserManager({
 //   ...cognitoAuthConfig,
 // });
