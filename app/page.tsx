@@ -14,42 +14,40 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-
-// Define the user type based on your auth service
-interface FormattedUser {
-  username: string;
-  email: string;
-  idToken: string;
-  accessToken: string;
-  authorizationHeaders: (type?: string) => { [key: string]: string };
-}
+import { getUserFragments } from "@/services/api";
+import { FormattedUser } from "../services/auth";
 
 export default function Home() {
   const [user, setUser] = useState<FormattedUser | null>(null);
+  const [fragments, setFragments] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const auth = useAuth();
 
   console.log("UserInfo:", user);
+  console.log("Fragments:", fragments);
 
   useEffect(() => {
-    // Initialize the app - equivalent to your init() function
+    // Initialize the app
     const initializeApp = async () => {
       try {
-        // Check if we're signed in (equivalent to getUser() in your vanilla JS)
+        // Check if we're signed in
         const currentUser = await getUser();
+        const userFragments = await getUserFragments(
+          currentUser as FormattedUser
+        );
         setUser(currentUser);
+        setFragments(userFragments);
       } catch (error) {
         console.error("Error checking user:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     initializeApp();
   }, []);
 
-  // // Handle login click (equivalent to loginBtn.onclick)
+  // // Handle login click
   // const handleLogin = () => {
   //   auth?.signinRedirect();
   // };
