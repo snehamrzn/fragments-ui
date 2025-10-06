@@ -25,30 +25,29 @@ export default function Home() {
   const router = useRouter();
   const auth = useAuth();
 
-  console.log("UserInfo:", user);
-  console.log("Fragments:", fragments);
+  // console.log("UserInfo:", user);
+  // console.log("Fragments:", fragments);
+
+  const initializeApp = async () => {
+    try {
+      // Check if we're signed in
+      const currentUser = await getUser();
+      if (currentUser) {
+        const userFragments = await getUserFragments(currentUser);
+        setUser(currentUser);
+        setFragments(userFragments);
+      } else {
+        setUser(null);
+        setFragments([]);
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Initialize the app
-    const initializeApp = async () => {
-      try {
-        // Check if we're signed in
-        const currentUser = await getUser();
-        if (currentUser) {
-          const userFragments = await getUserFragments(currentUser);
-          setUser(currentUser);
-          setFragments(userFragments);
-        } else {
-          setUser(null);
-          setFragments([]);
-        }
-      } catch (error) {
-        console.error("Error checking user:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     initializeApp();
   }, []);
 
