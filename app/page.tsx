@@ -76,7 +76,7 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto ">
       <div className="flex flex-col items-center justify-center min-h-[80vh] space-y-8">
         {/* Header */}
         <div className="text-center px-3 py-6">
@@ -129,7 +129,23 @@ export default function Home() {
                   <div className="text-sm text-slate-600">{user.email}</div>
                 </div>
 
-                <div className="flex justify-center pt-2">
+                {/* <div className="flex justify-center pt-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Button>
+                </div> */}
+                <div className="flex justify-center pt-2 space-x-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => router.push("/Info")}
+                  >
+                    Send
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
