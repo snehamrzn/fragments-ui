@@ -7,7 +7,7 @@ import { FormattedUser } from '../services/auth';
  * to have an `idToken` attached, so we can send that along with the request.
  */
 
-export async function getUserFragments(user: FormattedUser) {
+export async function getUserFragments(user: FormattedUser, expand: boolean = false) {
   console.log('Requesting user fragments data...');
   // console.log("ID Token:", user.idToken);
   //console.log("Authorization Headers:", user.authorizationHeaders());
@@ -15,6 +15,10 @@ export async function getUserFragments(user: FormattedUser) {
 
   try {
     const fragmentsUrl = new URL('v1/fragments', apiUrl);
+    // Add expand parameter to get full metadata
+    if (expand) {
+      fragmentsUrl.searchParams.set('expand', '1');
+    }
     const res = await fetch(fragmentsUrl, {
       // Generate headers with the proper Authorization bearer token to pass.
       // We are using the `authorizationHeaders()` helper method we defined
@@ -34,21 +38,50 @@ export async function getUserFragments(user: FormattedUser) {
 }
 
 /**
- * Create a new text fragment for the authenticated user
+ * Create a new fragment for the authenticated user
  * @param user - The authenticated user object with auth headers
- * @param fragmentText - The text content for the fragment
+ * @param fragmentContent - The content for the fragment (string or File)
+ * @param contentType - The MIME type of the fragment (e.g., 'text/plain', 'application/json')
  * @returns Promise<any> - The created fragment data
  */
-export async function createFragment(user: FormattedUser, fragmentText: string) {
+export async function createFragment(
+  user: FormattedUser,
+  fragmentContent: string | File,
+  contentType: string = 'text/plain'
+) {
   console.log('Creating new fragment...');
-  console.log('Fragment text:', fragmentText);
+  console.log('Content type:', contentType);
+  console.log('Fragment content type:', fragmentContent instanceof File ? 'File' : 'String');
 
   try {
     const fragmentsUrl = new URL('v1/fragments', apiUrl);
+    let body: BodyInit;
+
+    // Handle File objects by reading them
+    if (fragmentContent instanceof File) {
+      console.log('Reading file:', fragmentContent.name, 'Type:', fragmentContent.type);
+      // For text-based content types (including JSON), read as text
+      if (contentType.startsWith('text/') || contentType === 'application/json') {
+        body = await fragmentContent.text();
+        console.log('File read as text, length:', body.length);
+      } else {
+        // For binary content, use arrayBuffer
+        body = await fragmentContent.arrayBuffer();
+        console.log('File read as arrayBuffer, byteLength:', body.byteLength);
+      }
+    } else {
+      body = fragmentContent;
+      console.log('Using string content, length:', body.length);
+    }
+
+    const headers = user.authorizationHeaders(contentType);
+    console.log('Request headers:', headers);
+    console.log('Request URL:', fragmentsUrl.toString());
+
     const res = await fetch(fragmentsUrl, {
       method: 'POST',
-      headers: user.authorizationHeaders('text/plain'),
-      body: fragmentText,
+      headers: headers,
+      body: body,
     });
 
     if (!res.ok) {

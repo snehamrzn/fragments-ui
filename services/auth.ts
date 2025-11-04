@@ -47,6 +47,7 @@ function formatUser(user: User): FormattedUser {
         Authorization: `Bearer ${user.id_token}`,
       };
 
+      // Always set Content-Type if provided
       if (type) {
         headers['Content-Type'] = type;
       }
