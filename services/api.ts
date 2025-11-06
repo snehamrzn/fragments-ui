@@ -124,3 +124,36 @@ export async function getFragmentById(user: FormattedUser, fragmentId: string) {
     throw err;
   }
 }
+
+/**
+ * Get a specific fragment by ID with extension conversion
+ * @param user - The authenticated user object with auth headers
+ * @param fragmentId - The ID of the fragment to retrieve
+ * @param extension - The extension to convert to (e.g., 'html' for markdown conversion)
+ * @returns Promise<string> - The converted fragment content
+ */
+export async function getFragmentByIdWithExtension(
+  user: FormattedUser,
+  fragmentId: string,
+  extension: string
+) {
+  console.log(`Getting fragment by ID with extension: ${fragmentId}.${extension}`);
+
+  try {
+    const fragmentUrl = new URL(`v1/fragments/${fragmentId}.${extension}`, apiUrl);
+    const res = await fetch(fragmentUrl, {
+      headers: user.authorizationHeaders(),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Unable to get fragment: ${res.status} ${res.statusText}`);
+    }
+
+    const fragmentContent = await res.text();
+    console.log('Successfully got converted fragment content');
+    return fragmentContent;
+  } catch (err) {
+    console.error('Unable to get fragment with extension', err);
+    throw err;
+  }
+}

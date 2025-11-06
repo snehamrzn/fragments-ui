@@ -18,7 +18,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { getUserFragments, getFragmentById } from '@/services/api';
+import { getUserFragments, getFragmentById, getFragmentByIdWithExtension } from '@/services/api';
 import { FormattedUser } from '../services/auth';
 import Info from '../components/Info';
 
@@ -31,8 +31,11 @@ export default function Home() {
     id: string;
     content: string;
     type: string;
+    isHtml?: boolean;
+    htmlContent?: string;
   } | null>(null);
   const [loadingFragment, setLoadingFragment] = useState(false);
+  const [convertingToHtml, setConvertingToHtml] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -93,12 +96,40 @@ export default function Home() {
     setLoadingFragment(true);
     try {
       const content = await getFragmentById(user, fragmentId);
-      setSelectedFragment({ id: fragmentId, content, type: fragmentType });
+      setSelectedFragment({ id: fragmentId, content, type: fragmentType, isHtml: false });
     } catch (error) {
       console.error('Error fetching fragment content:', error);
     } finally {
       setLoadingFragment(false);
     }
+  };
+
+  // Handle converting markdown to HTML
+  const handleConvertToHtml = async () => {
+    if (!user || !selectedFragment) return;
+
+    setConvertingToHtml(true);
+    try {
+      const htmlContent = await getFragmentByIdWithExtension(user, selectedFragment.id, 'html');
+      setSelectedFragment({
+        ...selectedFragment,
+        htmlContent,
+        isHtml: true,
+      });
+    } catch (error) {
+      console.error('Error converting to HTML:', error);
+    } finally {
+      setConvertingToHtml(false);
+    }
+  };
+
+  // Handle switching back to raw view
+  const handleViewRaw = () => {
+    if (!selectedFragment) return;
+    setSelectedFragment({
+      ...selectedFragment,
+      isHtml: false,
+    });
   };
 
   if (loading) {
@@ -299,24 +330,55 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.98, y: 8 }}
               transition={{ type: 'spring', stiffness: 200, damping: 20 }}
             >
-              <Card className="w-full max-w-2xl">
+              <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
                 <CardHeader>
-                  <CardTitle className="font-mono tracking-wider">FRAGMENT CONTENT</CardTitle>
+                  <CardTitle className="font-mono tracking-wider">
+                    {selectedFragment.isHtml ? 'RENDERED HTML' : 'FRAGMENT CONTENT'}
+                  </CardTitle>
                   <CardDescription>
                     <span className="font-mono text-xs">{selectedFragment.id}</span>
                     {' • '}
                     <Badge variant="outline" className="ml-1">
                       {selectedFragment.type}
                     </Badge>
+                    {selectedFragment.isHtml && (
+                      <Badge variant="secondary" className="ml-2">
+                        Converted to HTML
+                      </Badge>
+                    )}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="bg-slate-100 rounded-md p-4 max-h-96 overflow-auto">
-                    <pre className="text-sm whitespace-pre-wrap break-words">
-                      {selectedFragment.content}
-                    </pre>
+                <CardContent className="flex-1 overflow-hidden">
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 max-h-[60vh] overflow-auto">
+                    {selectedFragment.isHtml && selectedFragment.htmlContent ? (
+                      <div
+                        className="rendered-html space-y-4"
+                        dangerouslySetInnerHTML={{ __html: selectedFragment.htmlContent }}
+                      />
+                    ) : (
+                      <pre className="text-sm whitespace-pre-wrap break-words font-mono text-slate-800">
+                        {selectedFragment.content}
+                      </pre>
+                    )}
                   </div>
-                  <div className="flex justify-end mt-4">
+                  <div className="flex justify-between items-center mt-4">
+                    <div>
+                      {selectedFragment.type === 'text/markdown' &&
+                        (selectedFragment.isHtml ? (
+                          <Button onClick={handleViewRaw} variant="secondary" size="sm">
+                            View Raw Markdown
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleConvertToHtml}
+                            variant="secondary"
+                            size="sm"
+                            disabled={convertingToHtml}
+                          >
+                            {convertingToHtml ? 'Converting...' : 'Convert to HTML'}
+                          </Button>
+                        ))}
+                    </div>
                     <Button onClick={() => setSelectedFragment(null)} variant="outline">
                       Close
                     </Button>
