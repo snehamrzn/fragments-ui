@@ -58,15 +58,6 @@ function formatUser(user: User): FormattedUser {
 }
 
 export async function getUser(): Promise<FormattedUser | null> {
-  // First, check if we're handling a signin redirect callback (e.g., is ?code=... in URL)
-  if (window.location.search.includes('code=')) {
-    const user = await userManager.signinCallback();
-    // Remove the auth code from the URL without triggering a reload
-    window.history.replaceState({}, document.title, window.location.pathname);
-    return formatUser(user as User);
-  }
-
-  // Otherwise, get the current user
   const user = await userManager.getUser();
   return formatUser(user as User);
 }

@@ -17,14 +17,22 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getUserFragments, getFragmentById, getFragmentByIdWithExtension } from '@/services/api';
 import { FormattedUser } from '../services/auth';
 import Info from '../components/Info';
 
+interface Fragment {
+  id: string;
+  type: string;
+  size: number;
+  created: string;
+  updated: string;
+}
+
 export default function Home() {
   const [user, setUser] = useState<FormattedUser | null>(null);
-  const [fragments, setFragments] = useState<any[]>([]);
+  const [fragments, setFragments] = useState<Fragment[]>([]);
   const [showSendModal, setShowSendModal] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedFragment, setSelectedFragment] = useState<{
@@ -40,7 +48,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const auth = useAuth();
-  const prefersReducedMotion = useReducedMotion();
 
   // console.log("UserInfo:", user);
   // console.log("Fragments:", fragments);
@@ -220,7 +227,7 @@ export default function Home() {
           <div className="px-4 pb-4 max-h-[60vh] overflow-y-auto">
             {fragments.length > 0 ? (
               <div className="space-y-4">
-                {fragments.map((fragment: any) => (
+                {fragments.map((fragment) => (
                   <Card
                     key={fragment.id}
                     className="border cursor-pointer hover:bg-slate-50 transition-colors"

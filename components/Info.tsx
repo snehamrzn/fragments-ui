@@ -115,7 +115,7 @@ export default function Info({ onClose, onCreated }: Props) {
       const result = await createFragment(user, content, contentType);
 
       const fragmentId =
-        typeof result === 'object' && result && 'id' in result ? (result as any).id : undefined;
+        typeof result === 'object' && result && 'id' in result ? (result as { id: string }).id : undefined;
 
       toast.success(
         fragmentId

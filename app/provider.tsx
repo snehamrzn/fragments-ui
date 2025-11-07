@@ -16,6 +16,15 @@ const cognitoAuthConfig: UserManagerSettings = {
 };
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
-  return <AuthProvider {...cognitoAuthConfig}>{children}</AuthProvider>;
+  return (
+    <AuthProvider
+      {...cognitoAuthConfig}
+      onSigninCallback={() =>
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }
+    >
+      {children}
+    </AuthProvider>
+  );
 };
 export default Provider;
