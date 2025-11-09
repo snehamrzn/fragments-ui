@@ -79,10 +79,10 @@ export default function Home() {
     initializeApp();
   }, []);
 
-  // // Handle login click
-  // const handleLogin = () => {
-  //   auth?.signinRedirect();
-  // };
+  // Handle login click
+  const handleLogin = () => {
+    auth.signinRedirect();
+  };
 
   // Handle logout click
   const handleLogout = () => {
@@ -172,7 +172,7 @@ export default function Home() {
             {/* Authentication Section */}
             <div className="flex justify-center">
               {!user ? (
-                <Button size="lg" className="w-full" onClick={() => auth.signinRedirect()}>
+                <Button size="lg" className="w-full" onClick={handleLogin}>
                   Login to Continue
                 </Button>
               ) : (

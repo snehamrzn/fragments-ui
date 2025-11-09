@@ -1,0 +1,4 @@
+// Populated at container start by entrypoint.sh (via envsubst).
+window.__ENV = {
+  API_ORIGIN: "$API_ORIGIN"
+};

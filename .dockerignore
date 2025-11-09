@@ -4,9 +4,10 @@ npm-debug.log
 .gitignore
 README.md
 .env
-.DS_Store
 dist
 build
 .vscode/
 .next/
+out/
 eslint.config.mts
+

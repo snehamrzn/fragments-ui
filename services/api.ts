@@ -1,6 +1,27 @@
-const apiUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-// const apiUrl:string = process.env.NEXT_PUBLIC_API_URL || "http://ec2-54-92-212-27.compute-1.amazonaws.com:8080";
+const buildTimeApiUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 import { FormattedUser } from '../services/auth';
+// this tells the compiler that inside the global namespace, the browser’s window
+// object has an optional property __ENV, and that object may have an optional
+// API_ORIGIN string.
+declare global {
+  interface Window {
+    __ENV?: {
+      API_ORIGIN?: string;
+    };
+  }
+}
+
+// Prefer the runtime API_ORIGIN injected by nginx, fall back to the build-time env.
+const getApiUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const runtimeUrl = window.__ENV?.API_ORIGIN;
+    if (runtimeUrl) {
+      return runtimeUrl;
+    }
+  }
+
+  return buildTimeApiUrl;
+};
 /**
  * Given an authenticated user, request all fragments for this user from the
  * fragments microservice (currently only running locally). We expect a user
@@ -14,7 +35,7 @@ export async function getUserFragments(user: FormattedUser, expand: boolean = fa
   // console.log("DEBUG----------: ", apiUrl)
 
   try {
-    const fragmentsUrl = new URL('v1/fragments', apiUrl);
+    const fragmentsUrl = new URL('v1/fragments', getApiUrl());
     // Add expand parameter to get full metadata
     if (expand) {
       fragmentsUrl.searchParams.set('expand', '1');
@@ -54,7 +75,7 @@ export async function createFragment(
   console.log('Fragment content type:', fragmentContent instanceof File ? 'File' : 'String');
 
   try {
-    const fragmentsUrl = new URL('v1/fragments', apiUrl);
+    const fragmentsUrl = new URL('v1/fragments', getApiUrl());
     let body: BodyInit;
 
     // Handle File objects by reading them
@@ -107,7 +128,7 @@ export async function getFragmentById(user: FormattedUser, fragmentId: string) {
   console.log('Getting fragment by ID:', fragmentId);
 
   try {
-    const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, apiUrl);
+    const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, getApiUrl());
     const res = await fetch(fragmentUrl, {
       headers: user.authorizationHeaders(),
     });
@@ -140,7 +161,7 @@ export async function getFragmentByIdWithExtension(
   console.log(`Getting fragment by ID with extension: ${fragmentId}.${extension}`);
 
   try {
-    const fragmentUrl = new URL(`v1/fragments/${fragmentId}.${extension}`, apiUrl);
+    const fragmentUrl = new URL(`v1/fragments/${fragmentId}.${extension}`, getApiUrl());
     const res = await fetch(fragmentUrl, {
       headers: user.authorizationHeaders(),
     });
