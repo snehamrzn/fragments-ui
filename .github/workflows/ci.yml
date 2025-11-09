@@ -91,7 +91,6 @@ jobs:
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}:${{ env.SHA_TAG }}, ${{ env.DOCKERHUB_REPO }}:main, ${{ env.DOCKERHUB_REPO }}:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_AWS_COGNITO_POOL_ID=${{ secrets.NEXT_PUBLIC_AWS_COGNITO_POOL_ID }}
             NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID=${{ secrets.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID }}
             NEXT_PUBLIC_OAUTH_SIGN_IN_REDIRECT_URL=${{ secrets.NEXT_PUBLIC_OAUTH_SIGN_IN_REDIRECT_URL }}
