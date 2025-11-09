@@ -30,7 +30,7 @@ RUN npm run build
 FROM nginx:alpine AS runner             
 # It installs the gettext package (we need its envsubst tool) 
 # and makes sure /etc/nginx/templates exists to hold our env-config template.   
-RUN apk add --no-cache gettext=0.22.5-r0 && mkdir -p /etc/nginx/templates  
+RUN apk add --no-cache gettext=0.24.1-r0 && mkdir -p /etc/nginx/templates
 # ship the static site
 COPY --from=builder /app/out /usr/share/nginx/html                
 # custom nginx rules
