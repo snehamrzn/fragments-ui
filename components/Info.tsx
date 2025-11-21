@@ -26,6 +26,11 @@ const FRAGMENT_TYPES = [
   { value: 'text/html', label: 'HTML' },
   { value: 'text/csv', label: 'CSV' },
   { value: 'application/json', label: 'JSON' },
+  { value: 'image/png', label: 'PNG Image' },
+  { value: 'image/jpeg', label: 'JPEG Image' },
+  { value: 'image/webp', label: 'WebP Image' },
+  { value: 'image/gif', label: 'GIF Image' },
+  { value: 'image/avif', label: 'AVIF Image' },
 ];
 
 type Props = {
@@ -220,7 +225,7 @@ export default function Info({ onClose, onCreated }: Props) {
               type="file"
               onChange={handleFileChange}
               className="hidden"
-              accept="text/*,application/json"
+              accept="text/*,application/json,image/*"
             />
             <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             {selectedFile ? (
@@ -233,7 +238,7 @@ export default function Info({ onClose, onCreated }: Props) {
             ) : (
               <div>
                 <p className="text-sm font-medium">Drag and drop a file here, or click to browse</p>
-                <p className="text-xs text-gray-500 mt-1">Supports text and JSON files</p>
+                <p className="text-xs text-gray-500 mt-1">Supports text, JSON, and image files</p>
               </div>
             )}
           </motion.div>

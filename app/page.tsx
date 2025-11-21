@@ -18,9 +18,16 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getUserFragments, getFragmentById, getFragmentByIdWithExtension } from '@/services/api';
+import {
+  getUserFragments,
+  getFragmentById,
+  getFragmentByIdWithExtension,
+  deleteFragment,
+  getApiUrl,
+} from '@/services/api';
 import { FormattedUser } from '../services/auth';
 import Info from '../components/Info';
+import AnimatedButton from '../components/AnimatedButton';
 
 interface Fragment {
   id: string;
@@ -41,9 +48,13 @@ export default function Home() {
     type: string;
     isHtml?: boolean;
     htmlContent?: string;
+    imageUrl?: string;
   } | null>(null);
   const [loadingFragment, setLoadingFragment] = useState(false);
   const [convertingToHtml, setConvertingToHtml] = useState(false);
+  const [deleteButtonStates, setDeleteButtonStates] = useState<
+    Record<string, 'idle' | 'loading' | 'success' | 'error'>
+  >({});
 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -79,6 +90,15 @@ export default function Home() {
     initializeApp();
   }, []);
 
+  // Cleanup blob URLs when component unmounts or when selectedFragment changes
+  useEffect(() => {
+    return () => {
+      if (selectedFragment?.imageUrl) {
+        URL.revokeObjectURL(selectedFragment.imageUrl);
+      }
+    };
+  }, [selectedFragment]);
+
   // Handle login click
   const handleLogin = () => {
     auth.signinRedirect();
@@ -102,8 +122,26 @@ export default function Home() {
     setShowDrawer(false); // Close the drawer first to show the data
     setLoadingFragment(true);
     try {
-      const content = await getFragmentById(user, fragmentId);
-      setSelectedFragment({ id: fragmentId, content, type: fragmentType, isHtml: false });
+      // Check if the fragment is an image
+      if (fragmentType.startsWith('image/')) {
+        // For images, we need to fetch as blob and create an object URL
+        const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, getApiUrl());
+        const response = await fetch(fragmentUrl.toString(), {
+          headers: user.authorizationHeaders(),
+        });
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setSelectedFragment({
+          id: fragmentId,
+          content: '',
+          type: fragmentType,
+          isHtml: false,
+          imageUrl,
+        });
+      } else {
+        const content = await getFragmentById(user, fragmentId);
+        setSelectedFragment({ id: fragmentId, content, type: fragmentType, isHtml: false });
+      }
     } catch (error) {
       console.error('Error fetching fragment content:', error);
     } finally {
@@ -137,6 +175,50 @@ export default function Home() {
       ...selectedFragment,
       isHtml: false,
     });
+  };
+
+  // Handle fragment deletion
+  const handleDeleteFragment = async (fragmentId: string, event: React.MouseEvent) => {
+    // Stop propagation to prevent card click event
+    event.stopPropagation();
+
+    if (!user) return;
+    const currentState = deleteButtonStates[fragmentId] || 'idle';
+
+    // Only proceed if idle
+    if (currentState !== 'idle') return;
+
+    // Set loading state
+    setDeleteButtonStates((prev) => ({ ...prev, [fragmentId]: 'loading' }));
+
+    try {
+      await deleteFragment(user, fragmentId);
+      console.log('Fragment deleted successfully');
+
+      // Show success state
+      setDeleteButtonStates((prev) => ({ ...prev, [fragmentId]: 'success' }));
+
+      // Wait a bit to show success, then refresh
+      setTimeout(async () => {
+        await initializeApp();
+        // Reset state after refresh (fragment will be gone)
+        setDeleteButtonStates((prev) => {
+          const newStates = { ...prev };
+          delete newStates[fragmentId];
+          return newStates;
+        });
+      }, 1000);
+    } catch (error) {
+      console.error('Error deleting fragment:', error);
+
+      // Show error state
+      setDeleteButtonStates((prev) => ({ ...prev, [fragmentId]: 'error' }));
+
+      // Reset to idle after showing error
+      setTimeout(() => {
+        setDeleteButtonStates((prev) => ({ ...prev, [fragmentId]: 'idle' }));
+      }, 2000);
+    }
   };
 
   if (loading) {
@@ -255,6 +337,15 @@ export default function Home() {
                           {new Date(fragment.updated).toLocaleString()}
                         </div>
                       </div>
+                      <div className="mt-4 flex justify-end">
+                        <AnimatedButton
+                          state={deleteButtonStates[fragment.id] || 'idle'}
+                          onClick={(e) => handleDeleteFragment(fragment.id, e)}
+                          idleText="🗑️ Delete"
+                          successText="✓ Deleted"
+                          errorText="✗ Failed"
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -357,7 +448,15 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden">
                   <div className="bg-white border border-slate-200 rounded-lg p-6 max-h-[60vh] overflow-auto">
-                    {selectedFragment.isHtml && selectedFragment.htmlContent ? (
+                    {selectedFragment.imageUrl ? (
+                      <div className="flex justify-center items-center">
+                        <img
+                          src={selectedFragment.imageUrl}
+                          alt="Fragment"
+                          className="max-w-full max-h-[50vh] object-contain rounded-lg"
+                        />
+                      </div>
+                    ) : selectedFragment.isHtml && selectedFragment.htmlContent ? (
                       <div
                         className="rendered-html space-y-4"
                         dangerouslySetInnerHTML={{ __html: selectedFragment.htmlContent }}

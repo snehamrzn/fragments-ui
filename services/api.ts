@@ -85,6 +85,9 @@ export async function createFragment(
       if (contentType.startsWith('text/') || contentType === 'application/json') {
         body = await fragmentContent.text();
         console.log('File read as text, length:', body.length);
+      } else if (contentType.startsWith('image/')) {
+        body = await fragmentContent.arrayBuffer();
+        console.log('Image read as arrayBuffer, byteLength:', body.byteLength);
       } else {
         // For binary content, use arrayBuffer
         body = await fragmentContent.arrayBuffer();
@@ -175,6 +178,33 @@ export async function getFragmentByIdWithExtension(
     return fragmentContent;
   } catch (err) {
     console.error('Unable to get fragment with extension', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a specific fragment by ID
+ * @param user - The authenticated user object with auth headers
+ * @param fragmentId - The ID of the fragment to delete
+ * @returns Promise<void>
+ */
+export async function deleteFragment(user: FormattedUser, fragmentId: string) {
+  console.log('Deleting fragment by ID:', fragmentId);
+
+  try {
+    const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, getApiUrl());
+    const res = await fetch(fragmentUrl, {
+      method: 'DELETE',
+      headers: user.authorizationHeaders(),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Unable to delete fragment: ${res.status} ${res.statusText}`);
+    }
+
+    console.log('Successfully deleted fragment');
+  } catch (err) {
+    console.error('Unable to delete fragment', err);
     throw err;
   }
 }
