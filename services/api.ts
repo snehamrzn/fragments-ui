@@ -12,7 +12,7 @@ declare global {
 }
 
 // Prefer the runtime API_ORIGIN injected by nginx, fall back to the build-time env.
-const getApiUrl = (): string => {
+export const getApiUrl = (): string => {
   if (typeof window !== 'undefined') {
     const runtimeUrl = window.__ENV?.API_ORIGIN;
     if (runtimeUrl) {
@@ -207,4 +207,26 @@ export async function deleteFragment(user: FormattedUser, fragmentId: string) {
     console.error('Unable to delete fragment', err);
     throw err;
   }
+}
+/**
+ * Update an existing fragment by ID
+ * @param user - The authenticated user object with auth headers
+ * @param fragmentId - The ID of the fragment to update
+ * @param fragmentContent - The new content for the fragment (string or File)
+ * @param contentType - The MIME type of the fragment
+ * @returns Promise<any> - The updated fragment data
+ */
+
+export async function updateFragment(
+  user: FormattedUser,
+  fragmentId: string,
+  fragmentContent: string | File,
+  contentType: string
+) {
+  console.log('Updating fragment:', fragmentId);
+  console.log('Content type:', contentType);
+  try {
+    const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, getApiUrl());
+    let body: BodyInit;
+  } catch (err) {}
 }
