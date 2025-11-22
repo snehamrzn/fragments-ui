@@ -56,7 +56,6 @@ export default function Home() {
     convertedType?: string;
   } | null>(null);
   const [loadingFragment, setLoadingFragment] = useState(false);
-  const [convertingToHtml, setConvertingToHtml] = useState(false);
   const [convertingImage, setConvertingImage] = useState(false);
   const [convertingText, setConvertingText] = useState(false);
   const [deleteButtonStates, setDeleteButtonStates] = useState<
@@ -163,25 +162,6 @@ export default function Home() {
       console.error('Error fetching fragment content:', error);
     } finally {
       setLoadingFragment(false);
-    }
-  };
-
-  // Handle converting markdown to HTML
-  const handleConvertToHtml = async () => {
-    if (!user || !selectedFragment) return;
-
-    setConvertingToHtml(true);
-    try {
-      const htmlContent = await getFragmentByIdWithExtension(user, selectedFragment.id, 'html');
-      setSelectedFragment({
-        ...selectedFragment,
-        htmlContent,
-        isHtml: true,
-      });
-    } catch (error) {
-      console.error('Error converting to HTML:', error);
-    } finally {
-      setConvertingToHtml(false);
     }
   };
 
