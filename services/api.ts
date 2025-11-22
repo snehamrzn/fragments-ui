@@ -228,5 +228,46 @@ export async function updateFragment(
   try {
     const fragmentUrl = new URL(`v1/fragments/${fragmentId}`, getApiUrl());
     let body: BodyInit;
-  } catch (err) {}
+
+    // Handle File objects by reading them
+    if (fragmentContent instanceof File) {
+      console.log('Reading file:', fragmentContent.name, 'Type:', fragmentContent.type);
+      // For text-based content types (including JSON), read as text
+      if (contentType.startsWith('text/') || contentType === 'application/json') {
+        body = await fragmentContent.text();
+        console.log('File read as text, length:', body.length);
+      } else if (contentType.startsWith('image/')) {
+        body = await fragmentContent.arrayBuffer();
+        console.log('Image read as arrayBuffer, byteLength:', body.byteLength);
+      } else {
+        // For other binary content, use arrayBuffer
+        body = await fragmentContent.arrayBuffer();
+        console.log('File read as arrayBuffer, byteLength:', body.byteLength);
+      }
+    } else {
+      body = fragmentContent;
+      console.log('Using string content, length:', body.length);
+    }
+
+    const headers = user.authorizationHeaders(contentType);
+    console.log('Request headers:', headers);
+    console.log('Request URL:', fragmentUrl.toString());
+
+    const res = await fetch(fragmentUrl, {
+      method: 'PUT',
+      headers: headers,
+      body: body,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Unable to update fragment: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    console.log('Successfully updated fragment', { data });
+    return data;
+  } catch (err) {
+    console.error('Unable to update fragment', err);
+    throw err;
+  }
 }
