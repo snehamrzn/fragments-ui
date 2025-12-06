@@ -81,8 +81,12 @@ export async function createFragment(
     // Handle File objects by reading them
     if (fragmentContent instanceof File) {
       console.log('Reading file:', fragmentContent.name, 'Type:', fragmentContent.type);
-      // For text-based content types (including JSON), read as text
-      if (contentType.startsWith('text/') || contentType === 'application/json') {
+      // For text-based content types (including JSON and YAML), read as text
+      if (
+        contentType.startsWith('text/') ||
+        contentType === 'application/json' ||
+        contentType === 'application/yaml'
+      ) {
         body = await fragmentContent.text();
         console.log('File read as text, length:', body.length);
       } else if (contentType.startsWith('image/')) {
@@ -101,6 +105,8 @@ export async function createFragment(
     const headers = user.authorizationHeaders(contentType);
     console.log('Request headers:', headers);
     console.log('Request URL:', fragmentsUrl.toString());
+    // console.log('Content-Type being sent:', contentType);
+    // console.log('Body type:', typeof body);
 
     const res = await fetch(fragmentsUrl, {
       method: 'POST',
@@ -232,8 +238,12 @@ export async function updateFragment(
     // Handle File objects by reading them
     if (fragmentContent instanceof File) {
       console.log('Reading file:', fragmentContent.name, 'Type:', fragmentContent.type);
-      // For text-based content types (including JSON), read as text
-      if (contentType.startsWith('text/') || contentType === 'application/json') {
+      // For text-based content types (including JSON and YAML), read as text
+      if (
+        contentType.startsWith('text/') ||
+        contentType === 'application/json' ||
+        contentType === 'application/yaml'
+      ) {
         body = await fragmentContent.text();
         console.log('File read as text, length:', body.length);
       } else if (contentType.startsWith('image/')) {
