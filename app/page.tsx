@@ -103,6 +103,14 @@ export default function Home() {
     initializeApp();
   }, []);
 
+  // Re-initialize when authentication state changes
+  useEffect(() => {
+    if (auth.isAuthenticated && !user) {
+      setLoading(true);
+      initializeApp();
+    }
+  }, [auth.isAuthenticated, user]);
+
   // Cleanup blob URLs when component unmounts or when selectedFragment changes
   useEffect(() => {
     return () => {
@@ -353,7 +361,7 @@ export default function Home() {
     return searchableText.includes(query);
   });
 
-  if (loading) {
+  if (loading || auth.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="animate-spin mx-auto my-20" />
