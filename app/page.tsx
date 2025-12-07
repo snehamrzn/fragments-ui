@@ -710,6 +710,91 @@ export default function Home() {
                           )}
                         </div>
                       )}
+
+                      {/* Text conversions - CSV */}
+                      {selectedFragment.type === 'text/csv' && (
+                        <div className="flex gap-2 items-center flex-wrap">
+                          {selectedFragment.convertedType ? (
+                            <Button onClick={handleViewRaw} variant="secondary" size="sm">
+                              View Original
+                            </Button>
+                          ) : (
+                            <>
+                              <span className="text-sm text-slate-600">Convert to:</span>
+                              <Button
+                                onClick={() => handleConvertText('txt', 'text/plain')}
+                                variant="outline"
+                                size="sm"
+                                disabled={convertingText}
+                              >
+                                Plain Text
+                              </Button>
+                              <Button
+                                onClick={() => handleConvertText('json', 'application/json')}
+                                variant="outline"
+                                size="sm"
+                                disabled={convertingText}
+                              >
+                                JSON
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Text conversions - JSON */}
+                      {selectedFragment.type === 'application/json' && (
+                        <div className="flex gap-2 items-center flex-wrap">
+                          {selectedFragment.convertedType ? (
+                            <Button onClick={handleViewRaw} variant="secondary" size="sm">
+                              View Original
+                            </Button>
+                          ) : (
+                            <>
+                              <span className="text-sm text-slate-600">Convert to:</span>
+                              <Button
+                                onClick={() => handleConvertText('txt', 'text/plain')}
+                                variant="outline"
+                                size="sm"
+                                disabled={convertingText}
+                              >
+                                Plain Text
+                              </Button>
+                              <Button
+                                onClick={() => handleConvertText('yaml', 'application/yaml')}
+                                variant="outline"
+                                size="sm"
+                                disabled={convertingText}
+                              >
+                                YAML
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Text conversions - YAML */}
+                      {selectedFragment.type === 'application/yaml' && (
+                        <div className="flex gap-2 items-center flex-wrap">
+                          {selectedFragment.convertedType ? (
+                            <Button onClick={handleViewRaw} variant="secondary" size="sm">
+                              View Original
+                            </Button>
+                          ) : (
+                            <>
+                              <span className="text-sm text-slate-600">Convert to:</span>
+                              <Button
+                                onClick={() => handleConvertText('txt', 'text/plain')}
+                                variant="outline"
+                                size="sm"
+                                disabled={convertingText}
+                              >
+                                Plain Text
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
                       
                       {/* Image conversion buttons */}
                       {selectedFragment.type.startsWith('image/') && (
